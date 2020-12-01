@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <title> contact - will's website </title>
+    <script src="scripts/validateforms.js"></script>
+  </head>
+  <body>
+
+    <!-- Navbar -->
+    <div class="navbar-wrapper">
+      <div class="navbar-name">
+        <a href="index.html" class="navbar-button">will dong</a>
+        <div class="navbar-info">
+          <a href="about.html" class="navbar-button">about</a>
+          <a href="contact.html" class="navbar-button">contact</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-wrapper">
+      <div class="form-header">
+        <h3> feel free to reach out and connect with me through my social media on my <a href="about.html">about page</a>. for anything else, send me a message here and i will try to respond asap! </h3>
+      </div>
+      <form name="myForm" action="mailto:williamdong97@gmail.com" method="post" onsubmit="return validateForm()">
+       <ul>
+        <li>
+          <label for="name">name: </label>
+          <input type="text" id="name" name="user_name" />
+        </li>
+        <li>
+          <label for="mail">e-mail: </label>
+          <input type="email" id="mail" name="user_email" />
+        </li>
+        <li>
+          <label for="msg">message: </label>
+          <textarea id="msg" name="user_message"></textarea>
+        </li>
+        <h3>inquiry type: </h3>
+        <li class="radio-buttons">
+          <input type="radio" id="personal-inquiry" name="response-type" value="personal-inquiry">
+          <label for="male">personal</label><br>
+          <input type="radio" id="business-inquiry" name="response-type" value="business-inquiry">
+          <label for="female">business</label><br>
+        </li>
+        <li class="button">
+          <button type="submit">submit</button>
+        </li>
+        </form>
+    </div>
+
+  </body>
+</html>

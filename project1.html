@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>project1 - will's website</title>
+  </head>
+  <body>
+
+  <!-- Navbar -->
+  <div class="navbar-wrapper">
+    <div class="navbar-name">
+      <a href="index.html" class="navbar-button">will dong</a>
+      <div class="navbar-info">
+        <a href="about.html" class="navbar-button">about</a>
+        <a href="contact.html" class="navbar-button">contact</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Description -->
+  <div class="project-wrapper">
+    <h3>modeling human behavior through language models</h3>
+    <p class="project-disclaimer"> disclaimer: this project is still in progress, and very much confidential in many of the aspects of what i can disclose</p>
+    <div class="project-description">
+      <p>
+        <img src="Images/t5.gif" alt="google t5 language model">
+        <p class="project-description-p"> to gain a better understanding of how people are influenced, i trained a <a href="https://ai.googleblog.com/2020/02/exploring-transfer-learning-with-t5.html" target="_blank">t5 language model</a>
+        to generate tweets with either pro-mask or anti-mask sentiment. the goal of this trained model was to essentially emulate human thought and behavior as an extension of behavioral analytics.</p>
+        <p class="project-description-p"> i created a scraper to collect relevant tweets to use as my dataset for training, and built a self-iterative pipeline to classify sentiment on unseen data which is then used as input for text generation.</p>
+        <p class="project-description-p"> an example of the tweets generated from the current state of the model are displayed to the left.</p>
+        <img src="Images/maskoutput.png" alt="example text from mask tweet generation">
+        <p class="project-description-p"> the next steps for this project are to improve model output, and derive thought processes as a concept for a client.</p>
+      </p>
+    </div>
+  </div>
+
+
+  </body>
+</html>

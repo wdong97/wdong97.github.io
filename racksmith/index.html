@@ -25,7 +25,7 @@
   html{scroll-behavior:smooth}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.6;
     -webkit-font-smoothing:antialiased;overflow-x:hidden}
-  /* tactile grain — kills the AI-flat look */
+  /* paper grain */
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
   main,header,footer{position:relative;z-index:2}
@@ -122,7 +122,7 @@
   .knob .notch{position:absolute;left:50%;top:11px;width:3px;height:22px;border-radius:2px;background:var(--amber);
     transform-origin:50% 37px;transform:translateX(-50%) rotate(var(--rot,-135deg));box-shadow:0 0 8px var(--amber);z-index:2}
   .knob .ring{position:absolute;inset:-7px;border-radius:50%;
-    background:conic-gradient(from 225deg,var(--amber) calc(var(--v,.7)*270deg),rgba(255,255,255,.07) 0 270deg,transparent 0);
+    background:conic-gradient(from 225deg,var(--amber) var(--arc,189deg),rgba(255,255,255,.07) 0 270deg,transparent 0);
     -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px));
             mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px))}
   .knob:focus-visible{box-shadow:0 0 0 3px var(--teal),0 5px 12px -4px #000}
@@ -244,7 +244,7 @@
 
   footer{background:var(--paper);padding:34px 0 54px}
   footer .fn{font-family:var(--mono);font-size:.72rem;color:var(--muted);line-height:2}
-  footer .disc{font-size:.66rem;color:var(--line2);margin-top:8px;max-width:640px;line-height:1.7}
+  footer .disc{font-size:.68rem;color:var(--muted);margin-top:8px;max-width:640px;line-height:1.7}
 
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
   @media(prefers-reduced-motion:reduce){
@@ -257,6 +257,7 @@
 </style>
 </head>
 <body>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
 <div class="grain" aria-hidden="true"></div>
 
 <header>
@@ -277,8 +278,8 @@
     <span class="eyebrow">Studio tool · Ableton Live 11 &amp; 12</span>
     <h1 style="margin-top:16px">Hear <em class="a">it</em>.<br>Point at <em class="b">it</em>.<br>Keep the <em class="c">rack</em>.</h1>
     <p class="lede">Load a track and point at the sound you want. Racksmith reads how it's processed and builds
-      an Ableton rack that matches, from <b>stock devices only</b>. Nothing to buy, and it opens in any copy of
-      Live.</p>
+      an Ableton rack that matches, from <b>stock devices only</b>. Nothing to buy, and any Ableton user on
+      Live 11 or 12 can open it.</p>
     <div class="cues">
       <span>Stock devices only</span><span>Your projects stay portable</span><span>No plugin licenses</span>
     </div>
@@ -287,7 +288,7 @@
       <a class="btn line" href="#how">Hear how it works</a>
     </div>
 
-    <!-- SIGNATURE: a rack unit you can actually touch -->
+    <!-- rack unit -->
     <div class="unit" aria-label="Racksmith hardware panel: stems, a match dial, and the exported device chain">
       <span class="ear l" aria-hidden="true"><b></b><b></b><b></b></span>
       <span class="ear r" aria-hidden="true"><b></b><b></b><b></b></span>
@@ -296,17 +297,17 @@
       <div class="facegrid">
         <div>
           <div class="modlabel">Pick it apart</div>
-          <div class="meters" id="meters">
-            <div class="meter on" style="--c:var(--coral)" data-fill=".92"><span class="segs"></span><span class="led"></span><span class="mlab">Vox</span></div>
-            <div class="meter" style="--c:var(--amber)" data-fill=".5"><span class="segs"></span><span class="led"></span><span class="mlab">Drm</span></div>
-            <div class="meter" style="--c:var(--violet)" data-fill=".62"><span class="segs"></span><span class="led"></span><span class="mlab">Bas</span></div>
-            <div class="meter" style="--c:var(--teal)" data-fill=".4"><span class="segs"></span><span class="led"></span><span class="mlab">Mel</span></div>
+          <div class="meters" id="meters" role="group" aria-label="Solo a stem">
+            <div class="meter on" role="button" tabindex="0" aria-pressed="true" aria-label="Solo vocals" style="--c:var(--coral)" data-fill=".92"><span class="segs"></span><span class="led"></span><span class="mlab">Vox</span></div>
+            <div class="meter" role="button" tabindex="0" aria-pressed="false" aria-label="Solo drums" style="--c:var(--amber)" data-fill=".5"><span class="segs"></span><span class="led"></span><span class="mlab">Drm</span></div>
+            <div class="meter" role="button" tabindex="0" aria-pressed="false" aria-label="Solo bass" style="--c:var(--violet)" data-fill=".62"><span class="segs"></span><span class="led"></span><span class="mlab">Bas</span></div>
+            <div class="meter" role="button" tabindex="0" aria-pressed="false" aria-label="Solo melody" style="--c:var(--teal)" data-fill=".4"><span class="segs"></span><span class="led"></span><span class="mlab">Mel</span></div>
           </div>
         </div>
 
         <div class="control">
           <div class="modlabel" style="align-self:flex-start">Dial it in</div>
-          <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Amount" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+          <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Match amount" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="70 percent">
             <span class="ring"></span><span class="notch"></span>
           </div>
           <span class="klab">Amount</span>
@@ -378,8 +379,8 @@
   <div class="wrap">
     <div class="reveal maxw"><span class="eyebrow">Or just ask for it by name</span>
       <h2>From a plain-English ask to a working rack.</h2>
-      <p class="lede" style="margin-top:20px">No reference track handy? Name the sound you're after. Racksmith
-        knows the moves and builds the chain from stock devices.</p></div>
+      <p class="lede" style="margin-top:20px">No reference track handy? Name the sound you're after and Racksmith
+        maps it to a stock-device chain, then tunes the parameters to match.</p></div>
     <div class="flow reveal">
       <div class="fstage">
         <div class="fk">01 · The ask</div>
@@ -388,8 +389,8 @@
       <div class="fconn" aria-hidden="true"><span class="pulse"></span></div>
       <div class="fstage">
         <div class="fk">02 · Racksmith</div>
-        <div class="working">Reads it as a <b>granular pitch-echo</b>, then picks the stock moves that get there.
-          <span class="go">building</span></div>
+        <div class="working">Reads it as a <b>granular pitch-echo</b> and maps it to the stock devices that do
+          the same job. <span class="go">building</span></div>
       </div>
       <div class="fconn" aria-hidden="true"><span class="pulse"></span></div>
       <div class="fstage">
@@ -473,7 +474,7 @@
       <input type="email" id="email" placeholder="you@yourstudio.com" aria-label="Your email" required>
       <button type="submit">Get early access</button>
     </form>
-    <p class="microcopy" id="micro">One note when it opens. No spam, no selling your address.</p>
+    <p class="microcopy" id="micro" aria-live="polite">One note when it opens. No spam, no selling your address.</p>
   </div>
 </section>
 
@@ -508,13 +509,15 @@
   var meters=[].slice.call(document.querySelectorAll('.meter'));
   meters.forEach(function(m){ paintMeter(m, +m.dataset.fill); });
 
-  // let people solo a stem
+  // let people solo a stem (click or keyboard)
   var lcdBig=document.getElementById('lcdBig');
+  function solo(m){
+    meters.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed','false'); paintMeter(x,+x.dataset.fill); });
+    m.classList.add('on'); m.setAttribute('aria-pressed','true'); paintMeter(m,+m.dataset.fill);
+  }
   meters.forEach(function(m){
-    m.addEventListener('click',function(){
-      meters.forEach(function(x){ x.classList.remove('on'); paintMeter(x,+x.dataset.fill); });
-      m.classList.add('on'); paintMeter(m,+m.dataset.fill);
-    });
+    m.addEventListener('click',function(){ solo(m); });
+    m.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); solo(m); } });
   });
 
   // the knob — draggable + keyboard
@@ -524,18 +527,22 @@
     var deg=-135 + v*270;
     knob.style.setProperty('--rot', deg.toFixed(1)+'deg');
     knob.style.setProperty('--v', v.toFixed(3));
+    knob.style.setProperty('--arc', (v*270).toFixed(1)+'deg');
     var pct=Math.round(v*100);
     lcdBig.textContent=pct+'%';
     knob.setAttribute('aria-valuenow', pct);
+    knob.setAttribute('aria-valuetext', pct+' percent');
     var onMeter=document.querySelector('.meter.on');
     if(onMeter) paintMeter(onMeter, Math.max(.06, v));
   }
   function setV(nv){ v=Math.max(0,Math.min(1,nv)); render(); }
   var drag=false, startY=0, startV=0;
-  knob.addEventListener('pointerdown',function(e){ drag=true; startY=e.clientY; startV=v; knob.setPointerCapture(e.pointerId); e.preventDefault(); });
+  knob.addEventListener('pointerdown',function(e){ drag=true; startY=e.clientY; startV=v; try{knob.setPointerCapture(e.pointerId);}catch(_){}; e.preventDefault(); });
   knob.addEventListener('pointermove',function(e){ if(!drag) return; setV(startV + (startY-e.clientY)/160); });
-  knob.addEventListener('pointerup',function(){ drag=false; });
-  knob.addEventListener('pointercancel',function(){ drag=false; });
+  function endDrag(){ drag=false; }
+  knob.addEventListener('pointerup',endDrag);
+  knob.addEventListener('pointercancel',endDrag);
+  knob.addEventListener('lostpointercapture',endDrag);
   knob.addEventListener('keydown',function(e){
     if(e.key==='ArrowUp'||e.key==='ArrowRight'){ setV(v+0.04); e.preventDefault(); }
     else if(e.key==='ArrowDown'||e.key==='ArrowLeft'){ setV(v-0.04); e.preventDefault(); }
@@ -559,17 +566,22 @@
   if(reduce) powerOn();
   else window.addEventListener('load',function(){ setTimeout(powerOn,420); });
 
-  // scroll reveals
-  var io=new IntersectionObserver(function(es){
-    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  },{threshold:.15});
-  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  // scroll reveals (fall back to visible if unsupported)
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{threshold:.15});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
 
   // early-access form (front-end only until wired to a list)
   var form=document.getElementById('signup'), micro=document.getElementById('micro'), email=document.getElementById('email');
   form.addEventListener('submit',function(e){
     e.preventDefault();
-    if(!email.value || email.value.indexOf('@')<1){ email.focus(); return; }
+    if(!email.value || email.value.indexOf('@')<1){ email.setAttribute('aria-invalid','true'); micro.textContent='Add an email so I can reach you.'; email.focus(); return; }
+    email.removeAttribute('aria-invalid');
     form.classList.add('done');
     micro.textContent="Thanks. Early access is opening soon and I'll reach out.";
   });

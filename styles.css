@@ -383,3 +383,25 @@ button:hover{
   color: #99ddff;
   font-size: 17px;
 }
+
+
+/* project dates + site date */
+
+.project-date{
+  color: #C0C0C0;
+  font-family: DejaVu Sans Mono, monospace;
+  font-size: 14px;
+  margin-top: 10px;
+  margin-left: 5%;
+  opacity: 0.7;
+}
+
+.site-date{
+  color: #C0C0C0;
+  font-family: DejaVu Sans Mono, monospace;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 200px;
+  margin-bottom: 50px;
+  opacity: 0.5;
+}

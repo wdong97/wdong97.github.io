@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>project2 - will's website</title>
+  </head>
+  <body>
+
+  <!-- Navbar -->
+  <div class="navbar-wrapper">
+    <div class="navbar-name">
+      <a href="index.html" class="navbar-button">will dong</a>
+      <div class="navbar-info">
+        <a href="about.html" class="navbar-button">about</a>
+        <a href="contact.html" class="navbar-button">contact</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Description -->
+  <div class="project-wrapper">
+    <h3>detecting ai-generated music</h3>
+    <div class="project-description">
+      <p>
+        <img src="Images/edgymtn2.jpg" alt="placeholder image">
+        <p class="project-description-p"> fully ai-generated tracks are flooding streaming platforms and crowding out human artists. i wanted to see how reliably a model can tell a machine-made song from a human one.</p>
+        <p class="project-description-p"> i pulled together a dataset of human and ai-generated audio, extracted spectral and timbral features, and trained a classifier to flag likely ai-origin tracks. i then measured how much its accuracy drops once a song is transcoded or lightly re-mastered, since that's what happens to real uploads.</p>
+        <p class="project-description-p"> next steps: test against fresh generations from newer models, and turn the honest "operating range" into something a distributor could actually use to screen uploads.</p>
+      </p>
+    </div>
+  </div>
+
+
+  </body>
+</html>

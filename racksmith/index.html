@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Racksmith · hear it, point at it, keep the rack</title>
+<meta name="description" content="Load a track, point at the sound you want, and get an Ableton rack that matches it, from stock devices only. A studio tool in the making.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Archivo:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* warm-paper editorial body */
+    --paper:#E7E3D6; --paper2:#EFEBDF; --card:#F1EDE2;
+    --ink:#171512; --ink2:#403A2E; --muted:#6E6757; --line:#CDC4AC; --line2:#B7AC90;
+    /* brushed-metal hardware */
+    --steel:#211E1A; --steel2:#171410; --steelhi:#3C372F; --bone:#EFE9DB; --bonemut:#A79C86;
+    /* signal colours (double as stem indicators) */
+    --amber:#E8952B; --teal:#1E9E8C; --coral:#E8615A; --violet:#8A78DD; --ox:#B23A2E;
+    --disp:"Bricolage Grotesque",Georgia,serif;
+    --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"Space Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.6;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  /* tactile grain — kills the AI-flat look */
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  main,header,footer{position:relative;z-index:2}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+  a{color:inherit}
+  h1,h2,h3{margin:0;font-family:var(--disp);font-weight:800;line-height:1.02;letter-spacing:-.02em}
+  h2{font-size:clamp(1.9rem,4.6vw,3.3rem)}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ox)}
+  .lede{font-size:clamp(1.08rem,1.7vw,1.34rem);color:var(--ink2)}
+  .mono{font-family:var(--mono)}
+
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:30;background:rgba(231,227,214,.86);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line)}
+  .bar{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:800;font-size:1.18rem;letter-spacing:-.02em}
+  .rackmark{display:flex;flex-direction:column;gap:2px;width:20px}
+  .rackmark i{height:3px;border-radius:1px;background:var(--ink);display:block}
+  .rackmark i:nth-child(2){width:70%} .rackmark i:nth-child(3){width:85%}
+  nav{display:flex;align-items:center;gap:24px}
+  nav a{font-family:var(--mono);font-size:.78rem;color:var(--muted);text-decoration:none;transition:color .15s}
+  nav a:hover{color:var(--ink)}
+  @media(max-width:760px){nav a.nl{display:none}}
+  .pill-btn{font-family:var(--mono);font-size:.76rem;font-weight:700;letter-spacing:.02em;text-decoration:none;
+    background:var(--ink);color:var(--paper2);padding:9px 15px;border-radius:2px;transition:background .15s}
+  .pill-btn:hover{background:var(--ox)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:clamp(46px,8vw,88px) 0 22px}
+  .hero h1{font-size:clamp(2.9rem,8.5vw,6rem);letter-spacing:-.035em}
+  .hero h1 em{font-style:normal}
+  .hero h1 .a{color:var(--coral)} .hero h1 .b{color:var(--teal)} .hero h1 .c{color:var(--amber)}
+  .hero .lede{max-width:600px;margin-top:22px}
+  .cues{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+  .cues span{display:inline-flex;align-items:center;gap:7px}
+  .cues span::before{content:"";width:6px;height:6px;background:var(--teal);border-radius:50%;display:inline-block}
+  .acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+  .btn{font-family:var(--mono);font-size:.84rem;font-weight:700;text-decoration:none;padding:13px 20px;border-radius:2px;
+    border:1.5px solid var(--ink);transition:transform .1s,background .15s,color .15s}
+  .btn.solid{background:var(--ink);color:var(--paper2)}
+  .btn.solid:hover{background:var(--ox);border-color:var(--ox)}
+  .btn.line:hover{background:var(--ink);color:var(--paper2)}
+  .btn:active{transform:translateY(1px)}
+
+  /* ---------- the hardware unit (signature) ---------- */
+  .unit{margin-top:clamp(38px,6vw,60px);position:relative;border-radius:11px;padding:18px 16px;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 2px,rgba(0,0,0,.02) 2px 4px),
+      linear-gradient(176deg,var(--steelhi),var(--steel) 16%,var(--steel2));
+    border:1px solid #000;color:var(--bone);
+    box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 34px 70px -34px rgba(0,0,0,.7),0 3px 0 #0c0a08}
+  .unit .ear{position:absolute;top:12px;bottom:12px;width:20px;display:none;flex-direction:column;justify-content:space-between;align-items:center;padding:6px 0}
+  .unit .ear.l{left:8px}.unit .ear.r{right:8px}
+  .unit .ear b{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#000,#26221d);box-shadow:0 1px 0 rgba(255,255,255,.06)}
+  @media(min-width:1000px){.unit{padding-left:40px;padding-right:40px}.unit .ear{display:flex}}
+  .screw{position:absolute;width:15px;height:15px;border-radius:50%;
+    background:radial-gradient(circle at 38% 32%,#5b554b,#211d18 70%);box-shadow:0 1px 1px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.5)}
+  .screw::after{content:"";position:absolute;inset:0;margin:auto;width:9px;height:1.5px;background:#0b0908;transform:rotate(38deg)}
+  .screw.tl{top:8px;left:8px}.screw.tr{top:8px;right:8px}.screw.bl{bottom:8px;left:8px}.screw.br{bottom:8px;right:8px}
+  @media(min-width:1000px){.screw.tl,.screw.bl{left:16px}.screw.tr,.screw.br{right:16px}}
+
+  .facegrid{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:stretch}
+  @media(max-width:820px){.facegrid{grid-template-columns:1fr;gap:16px}}
+  .modlabel{font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.18em;color:var(--bonemut);
+    text-transform:uppercase;margin-bottom:9px}
+
+  /* meters */
+  .meters{display:flex;gap:12px;padding:4px 2px}
+  @media(max-width:820px){.meters{justify-content:space-between}}
+  .meter{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
+  .segs{display:flex;flex-direction:column-reverse;gap:2px;height:112px;justify-content:flex-start}
+  .segs i{width:15px;height:6px;border-radius:1px;background:#37322b;transition:background .25s,box-shadow .25s}
+  .meter.on .segs i.lit{background:var(--c);box-shadow:0 0 6px var(--c)}
+  .meter .segs i.dim{background:#2b2721}
+  .meter .mlab{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;color:var(--bonemut)}
+  .meter.on .mlab{color:var(--c);text-shadow:0 0 8px var(--c)}
+  .meter .led{width:7px;height:7px;border-radius:50%;background:#2b2721}
+  .meter.on .led{background:var(--c);box-shadow:0 0 7px var(--c)}
+  .meter.on .mlab::after{content:" ·SOLO";color:var(--bone)}
+
+  /* centre control: knob + LCD */
+  .control{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+    border-left:1px solid rgba(255,255,255,.05);border-right:1px solid rgba(255,255,255,.05);padding:0 16px;min-width:210px}
+  @media(max-width:820px){.control{border:none;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:16px 0}}
+  .knob{position:relative;width:96px;height:96px;border-radius:50%;cursor:grab;touch-action:none;outline:none;
+    background:
+      repeating-conic-gradient(from 0deg,#1a1712 0 6deg,#2a2620 6deg 12deg),
+      radial-gradient(circle at 50% 42%,#433e36,#211d18 62%);
+    box-shadow:0 5px 12px -4px #000,inset 0 2px 3px rgba(255,255,255,.12),inset 0 -6px 12px rgba(0,0,0,.6)}
+  .knob:active{cursor:grabbing}
+  .knob::before{content:"";position:absolute;inset:13px;border-radius:50%;
+    background:radial-gradient(circle at 50% 38%,#37322b,#1b1813);box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
+  .knob .notch{position:absolute;left:50%;top:11px;width:3px;height:22px;border-radius:2px;background:var(--amber);
+    transform-origin:50% 37px;transform:translateX(-50%) rotate(var(--rot,-135deg));box-shadow:0 0 8px var(--amber);z-index:2}
+  .knob .ring{position:absolute;inset:-7px;border-radius:50%;
+    background:conic-gradient(from 225deg,var(--amber) calc(var(--v,.7)*270deg),rgba(255,255,255,.07) 0 270deg,transparent 0);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px));
+            mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px))}
+  .knob:focus-visible{box-shadow:0 0 0 3px var(--teal),0 5px 12px -4px #000}
+  .klab{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:var(--bonemut);text-transform:uppercase}
+
+  .lcd{width:100%;background:linear-gradient(180deg,#0c1a12,#08130d);border:1px solid #04240f;border-radius:4px;
+    padding:11px 13px;box-shadow:inset 0 0 20px rgba(0,0,0,.7),inset 0 0 0 1px rgba(0,0,0,.4);
+    font-family:var(--mono);color:#4ee08e;text-shadow:0 0 7px rgba(78,224,142,.55)}
+  .lcd .top{display:flex;justify-content:space-between;font-size:.58rem;letter-spacing:.12em;color:#2fae6c;text-shadow:none}
+  .lcd .big{font-size:1.7rem;font-weight:700;letter-spacing:.02em;line-height:1.1;margin:2px 0}
+  .lcd .file{font-size:.62rem;color:#38c078;letter-spacing:.02em}
+  .lcd .stat{display:inline-flex;align-items:center;gap:5px}
+  .lcd .stat b{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber)}
+  .lcd .stat.ok b{background:#4ee08e;box-shadow:0 0 6px #4ee08e}
+
+  /* device chain / export */
+  .chain{display:flex;flex-direction:column;gap:6px;min-width:196px;justify-content:center}
+  .dev{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.72rem;color:#d8d0c0;
+    background:linear-gradient(180deg,#26221c,#1b1712);border:1px solid #0d0b09;border-left:3px solid var(--c);
+    border-radius:3px;padding:8px 11px}
+  .dev .dl{width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 6px var(--c);flex:none}
+  .export{margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);
+    font-size:.74rem;font-weight:700;letter-spacing:.04em;color:#1a1712;background:linear-gradient(180deg,var(--amber),#c97a1a);
+    border:1px solid #7a4a10;border-radius:3px;padding:10px;box-shadow:0 2px 0 #7a4a10,inset 0 1px 0 rgba(255,255,255,.3)}
+  .plate{margin-top:14px;text-align:center;font-family:var(--mono);font-size:.6rem;letter-spacing:.34em;
+    color:#4a443b;text-transform:uppercase;text-shadow:0 1px 0 rgba(255,255,255,.05)}
+
+  /* ---------- generic sections ---------- */
+  section.blk{padding:clamp(56px,8vw,92px) 0;border-top:1px solid var(--line)}
+  .blk .eyebrow{display:block;margin-bottom:15px}
+  .maxw{max-width:700px}
+  .reveal{opacity:0;transform:translateY(18px)}
+  .reveal.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+
+  /* steps as index cards */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px}
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:5px;padding:22px 22px 24px;
+    box-shadow:2px 3px 0 var(--line)}
+  .step .n{font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.14em;color:var(--c);text-transform:uppercase}
+  .step h3{font-family:var(--disp);font-size:1.32rem;margin:12px 0 9px;letter-spacing:-.02em}
+  .step p{color:var(--ink2);font-size:.98rem}
+  .step .tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+  .step .tags b{font-family:var(--mono);font-weight:400;font-size:.64rem;color:var(--muted);border:1px solid var(--line2);
+    border-radius:2px;padding:3px 7px}
+
+  /* honest — spec sheet */
+  .spec{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:36px;border:1.5px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}
+  @media(max-width:700px){.spec{grid-template-columns:1fr}}
+  .spec .side{padding:26px}
+  .spec .side.does{border-right:1.5px solid var(--ink)}
+  @media(max-width:700px){.spec .side.does{border-right:none;border-bottom:1.5px solid var(--ink)}}
+  .spec h3{font-family:var(--mono);font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px}
+  .spec .does h3{color:var(--teal)} .spec .not h3{color:var(--ox)}
+  .spec ul{list-style:none;margin:0;padding:0;display:grid;gap:13px}
+  .spec li{position:relative;padding-left:26px;color:var(--ink2);font-size:.98rem}
+  .spec li::before{position:absolute;left:0;top:-1px;font-family:var(--mono);font-weight:700;font-size:1rem}
+  .spec .does li::before{content:"＋";color:var(--teal)} .spec .not li::before{content:"－";color:var(--ox)}
+  .spec li b{color:var(--ink)}
+
+  /* signal path */
+  .path{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin-top:34px}
+  .patchnode{flex:1;min-width:180px;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:20px}
+  .patchnode + .patchnode{margin-left:-1px}
+  .patchnode .k{font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+  .patchnode h4{font-family:var(--disp);font-size:1.14rem;margin:9px 0 6px;letter-spacing:-.01em}
+  .patchnode p{color:var(--muted);font-size:.9rem}
+  .pathnote{margin-top:20px;font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+  .pathnote a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+  /* prompt -> rack flow */
+  .flow{display:flex;align-items:stretch;margin-top:34px;flex-wrap:nowrap}
+  @media(max-width:900px){.flow{flex-direction:column}}
+  .fstage{flex:1 1 0;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;box-shadow:2px 3px 0 var(--line);display:flex;flex-direction:column}
+  .fk{font-family:var(--mono);font-size:.63rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+  .bubble{font-family:var(--mono);font-size:.9rem;color:var(--ink);background:var(--paper2);border:1px solid var(--line2);border-radius:3px 12px 12px 12px;padding:12px 13px;line-height:1.45}
+  .caret{display:inline-block;width:7px;height:1.05em;background:var(--coral);margin-left:1px;vertical-align:-2px;animation:blink 1.1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+  .working{font-size:.92rem;color:var(--ink2);line-height:1.55}
+  .working b{color:var(--ink)}
+  .working .go{font-family:var(--mono);font-size:.76rem;color:#b8791d}
+  .working .go::after{content:"";animation:dots 1.5s steps(4,end) infinite}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}100%{content:""}}
+  .devrow{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+  .fdev{font-family:var(--mono);font-size:.72rem;color:#d8d0c0;background:linear-gradient(180deg,#26221c,#1b1712);border:1px solid #0d0b09;border-left:3px solid var(--c);border-radius:3px;padding:7px 10px}
+  .adgcard{font-family:var(--mono);border:1px dashed var(--line2);border-radius:5px;padding:14px 12px;text-align:center;background:var(--paper2);margin-top:auto}
+  .adgcard .glyph{display:flex;gap:3px;justify-content:center;margin-bottom:10px}
+  .adgcard .glyph i{width:6px;height:22px;border-radius:1px;display:block}
+  .adgcard .fn{font-size:.86rem;color:var(--ink);font-weight:700}
+  .adgcard .dl{font-size:.66rem;color:var(--teal);margin-top:6px;display:block}
+  .fconn{flex:0 0 40px;position:relative;display:flex;align-items:center;justify-content:center}
+  .fconn::before{content:"";position:absolute;left:5px;right:5px;top:50%;transform:translateY(-50%);height:2px;background:repeating-linear-gradient(90deg,var(--line2) 0 5px,transparent 5px 11px)}
+  .fconn .pulse{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 9px var(--amber);position:relative;z-index:2;animation:flowx 2.2s linear infinite}
+  @keyframes flowx{0%{transform:translateX(-15px);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(15px);opacity:0}}
+  @media(max-width:900px){
+    .fconn{flex:0 0 30px;height:30px;width:100%}
+    .fconn::before{left:50%;right:auto;top:5px;bottom:5px;height:auto;width:2px;transform:translateX(-50%);background:repeating-linear-gradient(180deg,var(--line2) 0 5px,transparent 5px 11px)}
+    .fconn .pulse{animation:flowy 2.2s linear infinite}
+  }
+  @keyframes flowy{0%{transform:translateY(-13px);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateY(13px);opacity:0}}
+
+  /* final CTA — dark faceplate band */
+  .finale{background:linear-gradient(176deg,var(--steelhi),var(--steel) 18%,var(--steel2));color:var(--bone);
+    border-top:2px solid #000;border-bottom:2px solid #000}
+  .finale .wrap{padding-top:clamp(56px,8vw,88px);padding-bottom:clamp(56px,8vw,88px)}
+  .finale .eyebrow{color:var(--amber)}
+  .finale h2{color:var(--bone);max-width:660px}
+  .finale p.lede{color:#cabfa9;max-width:560px;margin-top:16px}
+  .signup{display:flex;gap:10px;margin-top:28px;max-width:460px;flex-wrap:wrap}
+  .signup input{flex:1;min-width:200px;font-family:var(--mono);font-size:.9rem;padding:13px 15px;border-radius:2px;
+    background:#0f0d0a;border:1px solid #454038;color:var(--bone)}
+  .signup input::placeholder{color:#7d7362}
+  .signup input:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+  .signup button{font-family:var(--mono);font-size:.84rem;font-weight:700;color:#1a1712;background:var(--amber);
+    border:none;border-radius:2px;padding:0 20px;cursor:pointer;transition:background .15s}
+  .signup button:hover{background:#f2a648}
+  .microcopy{font-family:var(--mono);font-size:.72rem;color:#8f8571;margin-top:14px}
+  .signup.done + .microcopy{color:var(--amber)}
+
+  footer{background:var(--paper);padding:34px 0 54px}
+  footer .fn{font-family:var(--mono);font-size:.72rem;color:var(--muted);line-height:2}
+  footer .disc{font-size:.66rem;color:var(--line2);margin-top:8px;max-width:640px;line-height:1.7}
+
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none;transition:none}
+    .segs i{transition:none}.knob .notch{transition:none}
+    .caret,.working .go::after{animation:none}
+    .fconn .pulse{animation:none;opacity:1}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand"><span class="rackmark" aria-hidden="true"><i></i><i></i><i></i></span>Racksmith</div>
+    <nav>
+      <a class="nl" href="#work">What it does</a>
+      <a class="nl" href="#how">How it works</a>
+      <a class="nl" href="#honest">Straight talk</a>
+      <a class="pill-btn" href="#access">Get early access</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Studio tool · Ableton Live 11 &amp; 12</span>
+    <h1 style="margin-top:16px">Hear <em class="a">it</em>.<br>Point at <em class="b">it</em>.<br>Keep the <em class="c">rack</em>.</h1>
+    <p class="lede">Load a track and point at the sound you want. Racksmith reads how it's processed and builds
+      an Ableton rack that matches, from <b>stock devices only</b>. Nothing to buy, and it opens in any copy of
+      Live.</p>
+    <div class="cues">
+      <span>Stock devices only</span><span>Your projects stay portable</span><span>No plugin licenses</span>
+    </div>
+    <div class="acts">
+      <a class="btn solid" href="#access">Get early access</a>
+      <a class="btn line" href="#how">Hear how it works</a>
+    </div>
+
+    <!-- SIGNATURE: a rack unit you can actually touch -->
+    <div class="unit" aria-label="Racksmith hardware panel: stems, a match dial, and the exported device chain">
+      <span class="ear l" aria-hidden="true"><b></b><b></b><b></b></span>
+      <span class="ear r" aria-hidden="true"><b></b><b></b><b></b></span>
+      <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+
+      <div class="facegrid">
+        <div>
+          <div class="modlabel">Pick it apart</div>
+          <div class="meters" id="meters">
+            <div class="meter on" style="--c:var(--coral)" data-fill=".92"><span class="segs"></span><span class="led"></span><span class="mlab">Vox</span></div>
+            <div class="meter" style="--c:var(--amber)" data-fill=".5"><span class="segs"></span><span class="led"></span><span class="mlab">Drm</span></div>
+            <div class="meter" style="--c:var(--violet)" data-fill=".62"><span class="segs"></span><span class="led"></span><span class="mlab">Bas</span></div>
+            <div class="meter" style="--c:var(--teal)" data-fill=".4"><span class="segs"></span><span class="led"></span><span class="mlab">Mel</span></div>
+          </div>
+        </div>
+
+        <div class="control">
+          <div class="modlabel" style="align-self:flex-start">Dial it in</div>
+          <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Amount" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+            <span class="ring"></span><span class="notch"></span>
+          </div>
+          <span class="klab">Amount</span>
+          <div class="lcd">
+            <div class="top"><span>RACKSMITH ST-1</span><span class="stat" id="stat"><b></b><i id="statTxt">match</i></span></div>
+            <div class="big" id="lcdBig">70%</div>
+            <div class="file">vocal_shimmer.adg</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="modlabel">Signal chain</div>
+          <div class="chain">
+            <div class="dev" style="--c:var(--coral)"><span class="dl"></span>EQ Eight</div>
+            <div class="dev" style="--c:var(--amber)"><span class="dl"></span>Compressor</div>
+            <div class="dev" style="--c:var(--violet)"><span class="dl"></span>Saturator</div>
+            <div class="dev" style="--c:var(--teal)"><span class="dl"></span>Reverb</div>
+            <div class="dev" style="--c:var(--coral)"><span class="dl"></span>Auto Filter</div>
+            <div class="export">↓ EXPORT .adg</div>
+          </div>
+        </div>
+      </div>
+      <div class="plate" aria-hidden="true">stock devices only · drag onto a dry channel</div>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="work">
+  <div class="wrap maxw reveal">
+    <span class="eyebrow">The part that kills an afternoon</span>
+    <h2>The sound's right there. Getting it into your session isn't.</h2>
+    <p class="lede" style="margin-top:20px">A vocal shimmers. A bass growls. A lead has that <em>thing</em>. So you
+      start guessing: swapping plugins you'll have to buy, chasing a tutorial that half-fits, twisting forty knobs
+      until the take you were feeling is gone. The move exists. It's just never in your hands when you need it.</p>
+  </div>
+</section>
+
+<section class="blk" id="how">
+  <div class="wrap">
+    <div class="reveal"><span class="eyebrow">Three moves</span>
+      <h2>Separate. Match. Export.</h2></div>
+    <div class="steps">
+      <div class="step reveal" style="--c:var(--coral)">
+        <span class="n">01 · Separate</span>
+        <h3>Pull the song apart</h3>
+        <p>Drop in a full track or a single stem. Racksmith splits it into vocals, drums, bass and melody. Point at
+          the one you're after.</p>
+        <div class="tags"><b>full-song input</b><b>4 stems</b><b>point &amp; solo</b></div>
+      </div>
+      <div class="step reveal" style="--c:var(--amber)">
+        <span class="n">02 · Match</span>
+        <h3>Read the treatment</h3>
+        <p>It listens to what's on your pick: the tone, the squeeze, the space. Then it dials a chain of stock
+          devices until it sounds like it. An optimizer homing in, not a preset guess.</p>
+        <div class="tags"><b>detect the fx</b><b>search the params</b><b>~1 min</b></div>
+      </div>
+      <div class="step reveal" style="--c:var(--teal)">
+        <span class="n">03 · Export</span>
+        <h3>Keep a real rack</h3>
+        <p>You get a genuine <span class="mono">.adg</span> file. Drag it onto your <em>own</em> dry sound. Stock
+          devices, every one labeled, opens in Live 11 or 12.</p>
+        <div class="tags"><b>Ableton .adg</b><b>editable</b><b>portable</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="ask">
+  <div class="wrap">
+    <div class="reveal maxw"><span class="eyebrow">Or just ask for it by name</span>
+      <h2>From a plain-English ask to a working rack.</h2>
+      <p class="lede" style="margin-top:20px">No reference track handy? Name the sound you're after. Racksmith
+        knows the moves and builds the chain from stock devices.</p></div>
+    <div class="flow reveal">
+      <div class="fstage">
+        <div class="fk">01 · The ask</div>
+        <div class="bubble">can I get the Crystallizer effect rack?<span class="caret"></span></div>
+      </div>
+      <div class="fconn" aria-hidden="true"><span class="pulse"></span></div>
+      <div class="fstage">
+        <div class="fk">02 · Racksmith</div>
+        <div class="working">Reads it as a <b>granular pitch-echo</b>, then picks the stock moves that get there.
+          <span class="go">building</span></div>
+      </div>
+      <div class="fconn" aria-hidden="true"><span class="pulse"></span></div>
+      <div class="fstage">
+        <div class="fk">03 · The chain</div>
+        <div class="devrow">
+          <div class="fdev" style="--c:var(--coral)">Grain Delay</div>
+          <div class="fdev" style="--c:var(--amber)">Delay</div>
+          <div class="fdev" style="--c:var(--teal)">Auto Filter</div>
+        </div>
+      </div>
+      <div class="fconn" aria-hidden="true"><span class="pulse"></span></div>
+      <div class="fstage">
+        <div class="fk">04 · In Ableton</div>
+        <div class="adgcard">
+          <span class="glyph" aria-hidden="true"><i style="background:var(--coral)"></i><i style="background:var(--amber)"></i><i style="background:var(--teal)"></i></span>
+          <span class="fn">crystallizer.adg</span>
+          <span class="dl">↓ drag into Live 11 or 12</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="honest">
+  <div class="wrap">
+    <div class="reveal maxw"><span class="eyebrow">Straight talk</span>
+      <h2>It matches the treatment. It doesn't steal the recording.</h2>
+      <p class="lede" style="margin-top:20px">Here's what other tools won't tell you: a recording can't reveal the
+        exact knobs behind it. Dozens of settings sound identical, so Racksmith doesn't sell you a magic "original
+        preset." It hands you a rack that does the same job, one you can open, read, and make your own.</p></div>
+    <div class="spec reveal">
+      <div class="side does">
+        <h3>What it does</h3>
+        <ul>
+          <li>Rebuilds the <b>treatment</b> (tone, dynamics, space) as an editable rack.</li>
+          <li>Uses <b>stock devices only</b>, so a collaborator can open your project.</li>
+          <li>Labels every device, so you <b>learn the move</b> instead of renting it.</li>
+          <li>Hands you a real file. <b>No lock-in, no subscription</b> to hear your own sound.</li>
+        </ul>
+      </div>
+      <div class="side not">
+        <h3>What it won't do</h3>
+        <ul>
+          <li>Copy the original <b>recording</b>. That's sampling, and not ours to give.</li>
+          <li>Claim the artist's <b>exact settings</b>. That number doesn't exist.</li>
+          <li>Fake a full <b>synth patch</b>. For a raw sound it samples the note instead.</li>
+          <li>Bluff effects it can't hear clean. <b>Guitar amps</b> and dense mixes stay honest.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="tech">
+  <div class="wrap">
+    <div class="reveal maxw"><span class="eyebrow">Real DSP, not vibes</span>
+      <h2>Published research, wired end to end.</h2>
+      <p class="lede" style="margin-top:20px">None of this is hand-waving. Each stage is a method that already
+        works on its own. Racksmith is just the wiring that turns them into a rack.</p></div>
+    <div class="path reveal">
+      <div class="patchnode" style="--c:var(--coral)"><span class="k">Separate</span><h4>HTDemucs</h4><p>Splits the mix into clean vocals, bass, drums and more.</p></div>
+      <div class="patchnode" style="--c:var(--amber)"><span class="k">Detect</span><h4>Effect model</h4><p>Reads which effects are actually on the sound.</p></div>
+      <div class="patchnode" style="--c:var(--violet)"><span class="k">Match</span><h4>CMA-ES + ST-ITO</h4><p>Searches stock-device settings against a learned ear.</p></div>
+      <div class="patchnode" style="--c:var(--teal)"><span class="k">Export</span><h4>Ableton .adg</h4><p>Writes the winning rack straight to a Live file.</p></div>
+    </div>
+    <p class="pathnote reveal">Standing on work from
+      <a href="https://github.com/facebookresearch/demucs" target="_blank" rel="noopener">Demucs</a>,
+      <a href="https://csteinmetz1.github.io/st-ito/" target="_blank" rel="noopener">ST-ITO</a> and
+      <a href="https://csteinmetz1.github.io/RemFX/" target="_blank" rel="noopener">RemFX</a>.</p>
+  </div>
+</section>
+</main>
+
+<section class="finale" id="access">
+  <div class="wrap">
+    <span class="eyebrow">Now in the studio</span>
+    <h2 style="margin-top:14px">It's being built. Get in early.</h2>
+    <p class="lede">First builds are vocal-first. Leave your email and I'll send it your way the day it's ready to
+      break. You'll be among the first to run it on your own tracks.</p>
+    <form class="signup" id="signup" novalidate>
+      <input type="email" id="email" placeholder="you@yourstudio.com" aria-label="Your email" required>
+      <button type="submit">Get early access</button>
+    </form>
+    <p class="microcopy" id="micro">One note when it opens. No spam, no selling your address.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fn">Racksmith. A studio tool in the making. Made by a producer, for producers.</div>
+    <div class="disc">Ableton and Live are trademarks of Ableton AG; Soundtoys and Crystallizer are trademarks of
+      Soundtoys, Inc. Racksmith is an independent tool, not affiliated with or endorsed by either. Product and
+      effect names appear for description only.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var N = 14; // segments per meter
+
+  // build meters
+  document.querySelectorAll('.meter').forEach(function(m){
+    var segs=m.querySelector('.segs'), html='';
+    for(var k=0;k<N;k++) html+='<i></i>';
+    segs.innerHTML=html;
+  });
+  function paintMeter(m,fill){
+    var lit=Math.round(fill*N), items=m.querySelectorAll('.segs i');
+    items.forEach(function(el,idx){
+      el.classList.remove('lit','dim');
+      if(m.classList.contains('on')){ if(idx<lit) el.classList.add('lit'); }
+      else { el.classList.add('dim'); if(idx<lit) el.style.background='#413a31'; }
+    });
+  }
+  var meters=[].slice.call(document.querySelectorAll('.meter'));
+  meters.forEach(function(m){ paintMeter(m, +m.dataset.fill); });
+
+  // let people solo a stem
+  var lcdBig=document.getElementById('lcdBig');
+  meters.forEach(function(m){
+    m.addEventListener('click',function(){
+      meters.forEach(function(x){ x.classList.remove('on'); paintMeter(x,+x.dataset.fill); });
+      m.classList.add('on'); paintMeter(m,+m.dataset.fill);
+    });
+  });
+
+  // the knob — draggable + keyboard
+  var knob=document.getElementById('knob'), stat=document.getElementById('stat'), statTxt=document.getElementById('statTxt');
+  var v=0.70; // 0..1
+  function render(){
+    var deg=-135 + v*270;
+    knob.style.setProperty('--rot', deg.toFixed(1)+'deg');
+    knob.style.setProperty('--v', v.toFixed(3));
+    var pct=Math.round(v*100);
+    lcdBig.textContent=pct+'%';
+    knob.setAttribute('aria-valuenow', pct);
+    var onMeter=document.querySelector('.meter.on');
+    if(onMeter) paintMeter(onMeter, Math.max(.06, v));
+  }
+  function setV(nv){ v=Math.max(0,Math.min(1,nv)); render(); }
+  var drag=false, startY=0, startV=0;
+  knob.addEventListener('pointerdown',function(e){ drag=true; startY=e.clientY; startV=v; knob.setPointerCapture(e.pointerId); e.preventDefault(); });
+  knob.addEventListener('pointermove',function(e){ if(!drag) return; setV(startV + (startY-e.clientY)/160); });
+  knob.addEventListener('pointerup',function(){ drag=false; });
+  knob.addEventListener('pointercancel',function(){ drag=false; });
+  knob.addEventListener('keydown',function(e){
+    if(e.key==='ArrowUp'||e.key==='ArrowRight'){ setV(v+0.04); e.preventDefault(); }
+    else if(e.key==='ArrowDown'||e.key==='ArrowLeft'){ setV(v-0.04); e.preventDefault(); }
+    else if(e.key==='Home'){ setV(0); e.preventDefault(); }
+    else if(e.key==='End'){ setV(1); e.preventDefault(); }
+  });
+
+  // power-on: sweep to the "matched" value, then flip the status LED
+  function powerOn(){
+    if(reduce){ setV(0.94); stat.classList.add('ok'); statTxt.textContent='matched'; return; }
+    var t=0, from=0.70, to=0.94;
+    var iv=setInterval(function(){
+      t+=0.08;
+      if(t>=1){ clearInterval(iv); setV(to); stat.classList.add('ok'); statTxt.textContent='matched'; return; }
+      // ease with a little overshoot — reads like a needle settling
+      var e=1-Math.pow(1-t,3), wob=Math.sin(t*9)*(1-t)*0.05;
+      setV(from+(to-from)*e+wob);
+    },40);
+  }
+  render();
+  if(reduce) powerOn();
+  else window.addEventListener('load',function(){ setTimeout(powerOn,420); });
+
+  // scroll reveals
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // early-access form (front-end only until wired to a list)
+  var form=document.getElementById('signup'), micro=document.getElementById('micro'), email=document.getElementById('email');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(!email.value || email.value.indexOf('@')<1){ email.focus(); return; }
+    form.classList.add('done');
+    micro.textContent="Thanks. Early access is opening soon and I'll reach out.";
+  });
+})();
+</script>
+</body>
+</html>
